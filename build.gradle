@@ -1,0 +1,132 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'idea'
+}
+
+version = project.mod_version
+group = project.mod_group_id
+
+repositories {
+    mavenLocal()
+
+    // Occultism
+    maven {
+        url = "https://dl.cloudsmith.io/public/klikli-dev/mods/maven/"
+        content { includeGroup "com.klikli_dev" }
+    }
+
+    // Apothic Attributes + Placebo
+    maven {
+        url = "https://maven.shadowsoffire.dev/releases"
+        content { includeGroup "dev.shadowsoffire" }
+    }
+
+    // DivineRPG + AoA3 + Modern Industrialization (all on CurseMaven)
+    maven {
+        url = "https://www.cursemaven.com"
+        content { includeGroup "curse.maven" }
+    }
+
+    maven {
+        name = "C4's Maven"
+        url = "https://maven.theillusivec4.top/"
+    }
+}
+
+base {
+    archivesName = project.mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    mods {
+        "${project.mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${project.neo_version}"
+
+    // Apothic Attributes + Placebo — shadowsoffire Maven
+    compileOnly "dev.shadowsoffire:ApothicAttributes:1.21.1-${project.apothic_attributes_version}"
+    compileOnly "dev.shadowsoffire:Placebo:1.21.1-${project.placebo_version}"
+
+    runtimeOnly "com.illusivesoulworks.caelus:caelus-neoforge:7.0.1+1.21.1"
+    compileOnly "com.illusivesoulworks.caelus:caelus-neoforge:7.0.1+1.21.1:api"
+
+    compileOnly "curse.maven:apothic-attributes-extension-1327218:6903822"
+
+    compileOnly "curse.maven:caelus-${project.caelus_project_id}:${project.caelus_file_id}"
+    // DivineRPG — CurseMaven
+    compileOnly "curse.maven:official-divinerpg-${project.divinerpg_project_id}:${project.divinerpg_file_id}"
+
+    // AoA3 — CurseMaven
+    compileOnly "curse.maven:advent-of-ascension-nevermine-${project.aoa3_project_id}:${project.aoa3_file_id}"
+
+    // Upgraded — local jar (only one you own)
+    compileOnly fileTree(dir: 'libs', include: 'upgraded-*.jar')
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_license            : mod_license,
+            mod_description        : mod_description,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+// Include the output of "generateModMetadata" as an input directory for the build
+// this works with both building through Gradle and the IDE.
+sourceSets.main.resources.srcDir generateModMetadata
+// To avoid having to run "generateModMetadata" manually, make it run on every project reload
+neoForge.ideSyncTask generateModMetadata
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

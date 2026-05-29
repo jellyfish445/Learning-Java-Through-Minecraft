@@ -1,0 +1,15 @@
+{
+  "item.dmmc.boss_upgrade": "Boss Upgrade",
+  "item.dmmc.armor_slot_token": "Armor Slot Token",
+  "item.dmmc.weapon_slot_token": "Weapon Slot Token",
+  "item.dmmc.apply_upgrade_token": "Apply Upgrade Token",
+  "item.dmmc.fishing_rod_slot_token": "Fishing Rod Slot Token",
+  "item.dmmc.tool_slot_token": "Tool Slot Token",
+
+  "dmmc.slot_added": "Upgrade slot added!",
+  "dmmc.slots_full": "This item already has the maximum number of upgrade slots.",
+  "dmmc.no_valid_gear": "No valid gear found. Hold the target item in your offhand.",
+  "dmmc.no_upgrade_item": "No Boss Upgrade found in inventory.",
+  "dmmc.upgrade_failed": "Upgrade failed; check that gear has an open slot and the upgrade type matches.",
+  "dmmc.upgrade_applied": "Upgrade applied!"
+}
